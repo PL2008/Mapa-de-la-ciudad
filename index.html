@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banco Online - Login</title>
+    <style>
+        /* Estilos básicos */
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        input { padding: 10px; margin-bottom: 10px; width: 80%; }
+        .btn { padding: 10px 20px; cursor: pointer; background-color: #4CAF50; color: white; border: none; }
+        .btn:hover { background-color: #45a049; }
+    </style>
+</head>
+<body>
+    <h2>Banco Online</h2>
+    <div>
+        <h3>Login</h3>
+        <input type="email" id="login-email" placeholder="Email"><br>
+        <input type="password" id="login-password" placeholder="Senha"><br>
+        <button onclick="login()" class="btn">Login</button>
+    </div>
+    <div>
+        <h3>Registrar</h3>
+        <input type="email" id="register-email" placeholder="Email"><br>
+        <input type="password" id="register-password" placeholder="Senha"><br>
+        <button onclick="register()" class="btn">Registrar</button>
+    </div>
+    <script>
+        const database = JSON.parse(localStorage.getItem('database')) || { users: {}, loans: [] };
+
+        function updateLocalStorage() {
+            localStorage.setItem('database', JSON.stringify(database));
+        }
+
+        function login() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            if (database.users[email] && database.users[email].password === password) {
+                localStorage.setItem('currentUser', email);
+                window.location.href = 'dashboard.html';
+            } else {
+                alert('Email ou senha incorretos');
+            }
+        }
+
+        function register() {
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            if (!database.users[email]) {
+                database.users[email] = { password: password, balance: 0, transactions: [], name: email };
+                updateLocalStorage();
+                alert('Registrado com sucesso! Faça login para continuar.');
+            } else {
+                alert('Usuário já registrado.');
+            }
+        }
+    </script>
+</body>
+</html>

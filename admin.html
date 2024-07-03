@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banco Online - Admin</title>
+    <style>
+        /* Estilos básicos */
+        body { font-family: Arial, sans-serif; }
+        .container { width: 80%; margin: auto; text-align: center; }
+        nav ul { list-style-type: none; padding: 0; }
+        nav ul li { display: inline; margin: 0 10px; }
+        ul { list-style-type: none; padding: 0; }
+        ul li { margin: 10px 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        table, th, td { border: 1px solid #ccc; }
+        th, td { padding: 10px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .btn { padding: 8px 20px; cursor: pointer; background-color: #4CAF50; color: white; border: none; }
+        .btn:hover { background-color: #45a049; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Administração do Banco Online</h1>
+        <nav>
+            <ul>
+                <li><a href="#" onclick="showUserManagement()">Gerenciar Usuários</a></li>
+                <li><a href="#" onclick="showLoanRequests()">Solicitações de Empréstimo</a></li>
+                <li><a href="#" onclick="logout()">Logout</a></li>
+            </ul>
+        </nav>
+        <div id="admin-content">
+            <div id="user-management-section" style="display:none;">
+                <h2>Gerenciar Usuários</h2>
+                <table id="user-table">
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Saldo</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-list"></tbody>
+                </table>
+            </div>
+            <div id="loan-requests-section" style="display:none;">
+                <h2>Solicitações de Empréstimo</h2>
+                <table id="loan-request-table">
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Quantia</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="loan-request-list"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script>
+        const database = JSON.parse(localStorage.getItem('database')) || { users: {}, loans: [] };
+
+        function updateLocalStorage() {
+            localStorage.setItem('database', JSON.stringify(database));
+        }
+
+        function logout() {
+            localStorage.removeItem('admin');
+            window.location.href = 'index.html';
+        }
+
+        function showUserManagement() {
+            const userList = document.getElementById('user-list');
+            userList.innerHTML = '';
+
+            for (let email in database.users) {
+                const user = database.users[email];
+                const row = `
+                    <tr>
+                        <td>${email}</td>
+                        <td>$${user.balance.toFixed(2)}</td>
+                        <td>
+                            <button class="btn" onclick="addMoney('${email}')">Adicionar Dinheiro</button>
+                            <button class="btn" onclick="removeMoney('${email}')">Remover Dinheiro</button>
+                            <button class="btn" onclick="deleteUser('${email}')">Excluir Conta</button>
+                        </td>
+                    </tr>
+                `;
+                userList.innerHTML += row;
+            }
+
+            document.getElementById('user-management-section').style.display = 'block';
+            document.getElementById('loan-requests-section').style.display = 'none';
+        }
+
+        function showLoanRequests() {
+            const loanRequestList = document.getElementById('loan-request-list');
+            loanRequestList.innerHTML = '';
+
+            database.loans.forEach((loan, index) => {
+                const row = `
+                    <tr>
+                        <td>${loan.email}</td>
+                        <td>$${loan.amount.toFixed(2)}</td>
+                        <td>
+                            <button class="btn" onclick="approveLoan(${index})">Aprovar</button>
+                            <button class="btn" onclick="rejectLoan(${index})">Rejeitar</button>
+                        </td>
+                    </tr>
+                `;
+                loanRequestList.innerHTML += row;
+            });
+
+            document.getElementById('user-management-section').style.display = 'none';
+            document.getElementById('loan-requests-section').style.display = 'block';
+        }
+
+        function addMoney(email) {
+            const amountStr = prompt(`Digite o valor a adicionar para ${email}:`);
+            const amount = parseFloat(amountStr);
+
+            if (!isNaN(amount) && amount > 0) {
+                database.users[email].balance += amount;
+                updateLocalStorage();
+                alert(`$${amount.toFixed(2)} adicionado para ${email}`);
+                showUserManagement();
+            } else {
+                alert('Valor inválido');
+            }
+        }
+
+        function removeMoney(email) {
+            const amountStr = prompt(`Digite o valor a remover para ${email}:`);
+            const amount = parseFloat(amountStr);
+
+            if (!isNaN(amount) && amount > 0) {
+                if (database.users[email].balance >= amount) {
+                    database.users[email].balance -= amount;
+                    updateLocalStorage();
+                    alert(`$${amount.toFixed(2)} removido de ${email}`);
+                    showUserManagement();
+                } else { alert('Saldo insuficiente');
+                }
+            } else {
+                alert('Valor inválido');
+            }
+        }
+
+        function deleteUser(email) {
+            if (confirm(`Tem certeza que deseja excluir a conta de ${email}?`)) {
+                delete database.users[email];
+                updateLocalStorage();
+                alert(`Conta de ${email} excluída`);
+                showUserManagement();
+            }
+        }
+
+        function approveLoan(index) {
+            const loan = database.loans[index];
+            const user = database.users[loan.email];
+
+            if (user) {
+                user.balance += loan.amount;
+                user.transactions.push({ type: 'Empréstimo', amount: loan.amount, email: 'Banco' });
+                database.loans.splice(index, 1);
+                updateLocalStorage();
+                alert('Empréstimo aprovado');
+                showLoanRequests();
+            } else {
+                alert('Usuário não encontrado');
+            }
+        }
+
+        function rejectLoan(index) {
+            database.loans.splice(index, 1);
+            updateLocalStorage();
+            alert('Empréstimo rejeitado');
+            showLoanRequests();
+        }
+
+        // Carregar dados do localStorage
+        if (localStorage.getItem('database')) {
+            Object.assign(database, JSON.parse(localStorage.getItem('database')));
+        }
+
+        // Mostrar a seção de gerenciamento de usuários por padrão ao carregar a página
+        showUserManagement();
+    </script>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banco Online - Dashboard</title>
+    <style>
+        /* Estilos básicos */
+        body { font-family: Arial, sans-serif; text-align: center; }
+        .container { width: 80%; margin: auto; margin-top: 20px; }
+        input { padding: 10px; margin-bottom: 10px; width: 100%; }
+        .btn { padding: 10px 20px; cursor: pointer; background-color: #4CAF50; color: white; border: none; }
+        .btn:hover { background-color: #45a049; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        table, th, td { border: 1px solid #ccc; }
+        th, td { padding: 10px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Bem-vindo ao Banco Online</h2>
+        <h3>Usuário: <span id="user-email"></span></h3>
+        <button onclick="logout()" class="btn">Logout</button>
+        <hr>
+        <h3>Saldo: $<span id="user-balance">0.00</span></h3>
+        <button onclick="showTransactionForm()" class="btn">Enviar Dinheiro</button>
+        <hr>
+        <h3>Histórico de Transações</h3>
+        <table id="transaction-table">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Descrição</th>
+                    <th>Valor</th>
+                </tr>
+            </thead>
+            <tbody id="transaction-list"></tbody>
+        </table>
+        <hr>
+        <button onclick="showLoanForm()" class="btn">Solicitar Empréstimo</button>
+        <hr>
+        <h3>Editar Perfil</h3>
+        <button onclick="editProfile()" class="btn">Editar Nome</button>
+        <button onclick="editPhoto()" class="btn">Editar Foto</button>
+    </div>
+    <script>
+        const database = JSON.parse(localStorage.getItem('database')) || { users: {}, loans: [] };
+        const currentUser = localStorage.getItem('currentUser');
+
+        if (!currentUser || !database.users[currentUser]) {
+            alert('Você não está logado!');
+            window.location.href = 'index.html';
+        }
+
+        function updateLocalStorage() {
+            localStorage.setItem('database', JSON.stringify(database));
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+        }
+
+        function showUserInfo() {
+            document.getElementById('user-email').textContent = currentUser;
+            document.getElementById('user-balance').textContent = database.users[currentUser].balance.toFixed(2);
+            showTransactions();
+        }
+
+        function showTransactions() {
+            const transactionList = document.getElementById('transaction-list');
+            transactionList.innerHTML = '';
+
+            database.users[currentUser].transactions.forEach(transaction => {
+                const row = `
+                    <tr>
+                        <td>${transaction.date}</td>
+                        <td>${transaction.description}</td>
+                        <td>$${transaction.amount.toFixed(2)}</td>
+                    </tr>
+                `;
+                transactionList.innerHTML += row;
+            });
+        }
+
+        function showTransactionForm() {
+            const amountStr = prompt('Digite o valor a enviar:');
+            const amount = parseFloat(amountStr);
+
+            if (!isNaN(amount) && amount > 0 && database.users[currentUser].balance >= amount) {
+                const receiverEmail = prompt('Digite o email do destinatário:');
+                if (database.users[receiverEmail]) {
+                    // Enviar dinheiro
+                    database.users[currentUser].balance -= amount;
+                    database.users[receiverEmail].balance += amount;
+
+                    // Registrar transação no histórico do remetente
+                    const transactionSender = { date: new Date().toLocaleString(), description: `Enviado para ${receiverEmail}`, amount: amount };
+                    database.users[currentUser].transactions.push(transactionSender);
+
+                    // Registrar transação no histórico do destinatário
+                    const transactionReceiver = { date: new Date().toLocaleString(), description: `Recebido de ${currentUser}`, amount: amount };
+                    database.users[receiverEmail].transactions.push(transactionReceiver);
+
+                    updateLocalStorage();
+                    showUserInfo();
+                    alert(`$${amount.toFixed(2)} enviado para ${receiverEmail}`);
+                } else {
+                    alert('Usuário destinatário não encontrado');
+                }
+            } else {
+                alert('Valor inválido ou saldo insuficiente');
+            }
+        }
+
+        function showLoanForm() {
+            const amountStr = prompt('Digite o valor desejado para o empréstimo:');
+            const amount = parseFloat(amountStr);
+
+            if (!isNaN(amount) && amount > 0) {
+                const loan = { email: currentUser, amount: amount };
+                database.loans.push(loan);
+                updateLocalStorage();
+                alert(`Solicitação de empréstimo de $${amount.toFixed(2)} enviada para análise.`);
+            } else {
+                alert('Valor de empréstimo inválido');
+            }
+        }
+
+        function editProfile() {
+            const newName = prompt('Digite seu novo nome:');
+            if (newName) {
+                database.users[currentUser].name = newName;
+                updateLocalStorage();
+                alert('Nome atualizado com sucesso');
+            } else {
+                alert('Nome inválido');
+            }
+        }
+
+        function editPhoto() {
+            alert('Editar foto não implementado neste exemplo.');
+        }
+
+        // Carregar dados do localStorage e mostrar informações do usuário ao carregar a página
+        if (localStorage.getItem('database')) {
+            Object.assign(database, JSON.parse(localStorage.getItem('database')));
+        }
+        showUserInfo();
+    </script>
+</body>
+</html>
