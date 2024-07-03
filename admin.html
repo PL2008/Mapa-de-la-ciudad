@@ -33,22 +33,22 @@
             <button onclick="deleteAccount()" class="btn">Deletar Conta</button>
         </div>
         <hr>
-        <h3>Gerenciar Empréstimos</h3>
-        <table id="loan-table">
+        <h3>Lista de Contas</h3>
+        <table id="accounts-table">
             <thead>
                 <tr>
                     <th>Email</th>
-                    <th>Valor</th>
-                    <th>Ação</th>
+                    <th>Saldo</th>
+                    <th>Ações</th>
                 </tr>
             </thead>
-            <tbody id="loan-list"></tbody>
+            <tbody id="accounts-list"></tbody>
         </table>
     </div>
+
     <script>
+        // Carregar dados do armazenamento local
         const database = JSON.parse(localStorage.getItem('database')) || { users: {}, loans: [] };
-        const adminEmail = 'santxadmin@gmail.com';
-        const currentUser = localStorage.getItem('currentUser');
 
         function updateLocalStorage() {
             localStorage.setItem('database', JSON.stringify(database));
@@ -70,12 +70,11 @@
         }
 
         function addBalance() {
+            const email = document.getElementById('user-email').textContent;
             const amountStr = prompt('Digite o valor a adicionar:');
             const amount = parseFloat(amountStr);
-            const email = document.getElementById('user-email').textContent;
             if (!isNaN(amount) && amount > 0) {
                 database.users[email].balance += amount;
-                database.users[email].transactions.push({ date: new Date().toLocaleString(), description: 'Adicionado pelo admin', amount: amount });
                 updateLocalStorage();
                 loadUserDetails();
                 alert(`$${amount.toFixed(2)} adicionado ao saldo de ${email}`);
@@ -85,12 +84,11 @@
         }
 
         function subtractBalance() {
+            const email = document.getElementById('user-email').textContent;
             const amountStr = prompt('Digite o valor a subtrair:');
             const amount = parseFloat(amountStr);
-            const email = document.getElementById('user-email').textContent;
             if (!isNaN(amount) && amount > 0 && database.users[email].balance >= amount) {
                 database.users[email].balance -= amount;
-                database.users[email].transactions.push({ date: new Date().toLocaleString(), description: 'Subtraído pelo admin', amount: -amount });
                 updateLocalStorage();
                 loadUserDetails();
                 alert(`$${amount.toFixed(2)} subtraído do saldo de ${email}`);
@@ -121,58 +119,35 @@
             }
         }
 
-        function loadLoans() {
-            const loanList = document.getElementById('loan-list');
-            loanList.innerHTML = '';
+        function loadAccountsTable() {
+            const accountsList = document.getElementById('accounts-list');
+            accountsList.innerHTML = '';
 
-            database.loans.forEach((loan, index) => {
+            for (let email in database.users) {
+                const user = database.users[email];
                 const row = `
                     <tr>
-                        <td>${loan.email}</td>
-                        <td>$${loan.amount.toFixed(2)}</td>
+                        <td>${email}</td>
+                        <td>$${user.balance.toFixed(2)}</td>
                         <td>
-                            <button onclick="approveLoan(${index})" class="btn">Aprovar</button>
-                            <button onclick="rejectLoan(${index})" class="btn">Rejeitar</button>
+                            <button onclick="showUserDetails('${email}')" class="btn">Detalhes</button>
                         </td>
                     </tr>
                 `;
-                loanList.innerHTML += row;
-            });
-        }
-
-        function approveLoan(index) {
-            const loan = database.loans[index];
-            if (loan && loan.amount > 0 && loan.amount < 10000) {  // Limite para valor não extravagante
-                database.users[loan.email].balance += loan.amount;
-                database.users[loan.email].transactions.push({ date: new Date().toLocaleString(), description: 'Empréstimo aprovado', amount: loan.amount });
-                database.loans.splice(index, 1);
-                updateLocalStorage();
-                loadUserDetails();
-                loadLoans();
-                alert(`Empréstimo de $${loan.amount.toFixed(2)} aprovado para ${loan.email}`);
-            } else {
-                alert('Valor de empréstimo inválido ou extravagante');
+                accountsList.innerHTML += row;
             }
         }
 
-        function rejectLoan(index) {
-            const loan = database.loans[index];
-            if (loan) {
-                database.loans.splice(index, 1);
-                updateLocalStorage();
-                loadLoans();
-                alert(`Empréstimo de $${loan.amount.toFixed(2)} rejeitado para ${loan.email}`);
-            }
+        function showUserDetails(email) {
+            document.getElementById('user-email').textContent = email;
+            document.getElementById('user-balance').textContent = database.users[email].balance.toFixed(2);
+            document.getElementById('user-details').style.display = 'block';
         }
 
         window.onload = function() {
-            if (currentUser !== adminEmail) {
-                alert('Acesso negado!');
-                window.location.href = 'index.html';
-            }
             loadUserSelect();
-            loadLoans();
-        }
+            loadAccountsTable();
+        };
     </script>
 </body>
 </html>
