@@ -48,7 +48,7 @@
 
     <script>
         // Carregar dados do armazenamento local
-        const database = JSON.parse(localStorage.getItem('database')) || { users: {}, loans: [] };
+        let database = JSON.parse(localStorage.getItem('database')) || { users: {}, loans: [] };
 
         function updateLocalStorage() {
             localStorage.setItem('database', JSON.stringify(database));
@@ -138,11 +138,15 @@
             }
         }
 
-        function showUserDetails(email) {
-            document.getElementById('user-email').textContent = email;
-            document.getElementById('user-balance').textContent = database.users[email].balance.toFixed(2);
-            document.getElementById('user-details').style.display = 'block';
-        }
+        // Verificar regularmente se há atualizações no armazenamento local
+        setInterval(() => {
+            const storedDatabase = JSON.parse(localStorage.getItem('database'));
+            if (storedDatabase && JSON.stringify(database) !== JSON.stringify(storedDatabase)) {
+                database = storedDatabase;
+                loadUserSelect();
+                loadAccountsTable();
+            }
+        }, 1000); // Verificar a cada segundo
 
         window.onload = function() {
             loadUserSelect();
