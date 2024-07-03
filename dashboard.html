@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Banco Online - Dashboard</title>
+    <title>Dashboard - Banco Online</title>
     <style>
-        /* Estilos básicos */
-        body { font-family: Arial, sans-serif; text-align: center; }
-        .container { width: 80%; margin: auto; margin-top: 20px; }
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        .container { width: 80%; margin: auto; }
         input { padding: 10px; margin-bottom: 10px; width: 100%; }
         .btn { padding: 10px 20px; cursor: pointer; background-color: #4CAF50; color: white; border: none; }
         .btn:hover { background-color: #45a049; }
@@ -19,15 +18,24 @@
 </head>
 <body>
     <div class="container">
-        <h2>Bem-vindo ao Banco Online</h2>
-        <h3>Usuário: <span id="user-email"></span></h3>
+        <h2>Dashboard</h2>
         <button onclick="logout()" class="btn">Logout</button>
+        <button onclick="goToAdmin()" class="btn">Admin</button>
         <hr>
-        <h3>Saldo: $<span id="user-balance">0.00</span></h3>
-        <button onclick="showTransactionForm()" class="btn">Enviar Dinheiro</button>
+        <h3>Saldo Atual</h3>
+        <p>Saldo: $<span id="user-balance">0.00</span></p>
         <hr>
-        <h3>Histórico de Transações</h3>
-        <table id="transaction-table">
+        <h3>Enviar Dinheiro</h3>
+        <input type="email" id="send-email" placeholder="Email do destinatário">
+        <input type="number" id="send-amount" placeholder="Valor">
+        <button onclick="sendMoney()" class="btn">Enviar</button>
+        <hr>
+        <h3>Solicitar Empréstimo</h3>
+        <input type="number" id="loan-amount" placeholder="Valor do Empréstimo">
+        <button onclick="requestLoan()" class="btn">Solicitar</button>
+        <hr>
+        <h3>Histórico</h3>
+        <table id="history-table">
             <thead>
                 <tr>
                     <th>Data</th>
@@ -35,21 +43,14 @@
                     <th>Valor</th>
                 </tr>
             </thead>
-            <tbody id="transaction-list"></tbody>
+            <tbody id="history-list"></tbody>
         </table>
-        <hr>
-        <button onclick="showLoanForm()" class="btn">Solicitar Empréstimo</button>
-        <hr>
-        <h3>Editar Perfil</h3>
-        <button onclick="editProfile()" class="btn">Editar Nome</button>
-        <button onclick="editPhoto()" class="btn">Editar Foto</button>
     </div>
     <script>
         const database = JSON.parse(localStorage.getItem('database')) || { users: {}, loans: [] };
         const currentUser = localStorage.getItem('currentUser');
 
-        if (!currentUser || !database.users[currentUser]) {
-            alert('Você não está logado!');
+        if (!currentUser) {
             window.location.href = 'index.html';
         }
 
@@ -62,92 +63,68 @@
             window.location.href = 'index.html';
         }
 
-        function showUserInfo() {
-            document.getElementById('user-email').textContent = currentUser;
-            document.getElementById('user-balance').textContent = database.users[currentUser].balance.toFixed(2);
-            showTransactions();
+        function goToAdmin() {
+            window.location.href = 'admin.html';
         }
 
-        function showTransactions() {
-            const transactionList = document.getElementById('transaction-list');
-            transactionList.innerHTML = '';
+        function sendMoney() {
+            const recipientEmail = document.getElementById('send-email').value;
+            const amount = parseFloat(document.getElementById('send-amount').value);
+
+            if (database.users[recipientEmail] && !isNaN(amount) && amount > 0 && database.users[currentUser].balance >= amount) {
+                database.users[currentUser].balance -= amount;
+                database.users[recipientEmail].balance += amount;
+
+                database.users[currentUser].transactions.push({ date: new Date().toLocaleString(), description: `Enviado para ${recipientEmail}`, amount: -amount });
+                database.users[recipientEmail].transactions.push({ date: new Date().toLocaleString(), description: `Recebido de ${currentUser}`, amount: amount });
+
+                updateLocalStorage();
+                loadHistory();
+                loadBalance();
+                alert('Dinheiro enviado com sucesso!');
+
+                // Enviar email de confirmação (simulado)
+                alert(`Email enviado para ${currentUser}: Você enviou $${amount.toFixed(2)} para ${recipientEmail}`);
+            } else {
+                alert('Email inválido, valor inválido, ou saldo insuficiente.');
+            }
+        }
+
+        function requestLoan() {
+            const amount = parseFloat(document.getElementById('loan-amount').value);
+            if (!isNaN(amount) && amount > 0) {
+                database.loans.push({ email: currentUser, amount });
+                updateLocalStorage();
+                alert('Pedido de empréstimo enviado!');
+            } else {
+                alert('Valor inválido.');
+            }
+        }
+
+        function loadHistory() {
+            const historyList = document.getElementById('history-list');
+            historyList.innerHTML = '';
 
             database.users[currentUser].transactions.forEach(transaction => {
                 const row = `
                     <tr>
                         <td>${transaction.date}</td>
                         <td>${transaction.description}</td>
-                        <td>$${transaction.amount.toFixed(2)}</td>
+                        <td>${transaction.amount.toFixed(2)}</td>
                     </tr>
                 `;
-                transactionList.innerHTML += row;
+                historyList.innerHTML += row;
             });
         }
 
-        function showTransactionForm() {
-            const amountStr = prompt('Digite o valor a enviar:');
-            const amount = parseFloat(amountStr);
-
-            if (!isNaN(amount) && amount > 0 && database.users[currentUser].balance >= amount) {
-                const receiverEmail = prompt('Digite o email do destinatário:');
-                if (database.users[receiverEmail]) {
-                    // Enviar dinheiro
-                    database.users[currentUser].balance -= amount;
-                    database.users[receiverEmail].balance += amount;
-
-                    // Registrar transação no histórico do remetente
-                    const transactionSender = { date: new Date().toLocaleString(), description: `Enviado para ${receiverEmail}`, amount: amount };
-                    database.users[currentUser].transactions.push(transactionSender);
-
-                    // Registrar transação no histórico do destinatário
-                    const transactionReceiver = { date: new Date().toLocaleString(), description: `Recebido de ${currentUser}`, amount: amount };
-                    database.users[receiverEmail].transactions.push(transactionReceiver);
-
-                    updateLocalStorage();
-                    showUserInfo();
-                    alert(`$${amount.toFixed(2)} enviado para ${receiverEmail}`);
-                } else {
-                    alert('Usuário destinatário não encontrado');
-                }
-            } else {
-                alert('Valor inválido ou saldo insuficiente');
-            }
+        function loadBalance() {
+            document.getElementById('user-balance').textContent = database.users[currentUser].balance.toFixed(2);
         }
 
-        function showLoanForm() {
-            const amountStr = prompt('Digite o valor desejado para o empréstimo:');
-            const amount = parseFloat(amountStr);
-
-            if (!isNaN(amount) && amount > 0) {
-                const loan = { email: currentUser, amount: amount };
-                database.loans.push(loan);
-                updateLocalStorage();
-                alert(`Solicitação de empréstimo de $${amount.toFixed(2)} enviada para análise.`);
-            } else {
-                alert('Valor de empréstimo inválido');
-            }
+        window.onload = function() {
+            loadBalance();
+            loadHistory();
         }
-
-        function editProfile() {
-            const newName = prompt('Digite seu novo nome:');
-            if (newName) {
-                database.users[currentUser].name = newName;
-                updateLocalStorage();
-                alert('Nome atualizado com sucesso');
-            } else {
-                alert('Nome inválido');
-            }
-        }
-
-        function editPhoto() {
-            alert('Editar foto não implementado neste exemplo.');
-        }
-
-        // Carregar dados do localStorage e mostrar informações do usuário ao carregar a página
-        if (localStorage.getItem('database')) {
-            Object.assign(database, JSON.parse(localStorage.getItem('database')));
-        }
-        showUserInfo();
     </script>
 </body>
 </html>

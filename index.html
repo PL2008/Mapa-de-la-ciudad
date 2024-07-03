@@ -3,56 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Banco Online - Login</title>
+    <title>Banco Online</title>
     <style>
-        /* Estilos básicos */
         body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
-        input { padding: 10px; margin-bottom: 10px; width: 80%; }
+        .container { width: 80%; margin: auto; }
+        input { padding: 10px; margin-bottom: 10px; width: 100%; }
         .btn { padding: 10px 20px; cursor: pointer; background-color: #4CAF50; color: white; border: none; }
         .btn:hover { background-color: #45a049; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
-    <h2>Banco Online</h2>
-    <div>
-        <h3>Login</h3>
-        <input type="email" id="login-email" placeholder="Email"><br>
-        <input type="password" id="login-password" placeholder="Senha"><br>
-        <button onclick="login()" class="btn">Login</button>
-    </div>
-    <div>
-        <h3>Registrar</h3>
-        <input type="email" id="register-email" placeholder="Email"><br>
-        <input type="password" id="register-password" placeholder="Senha"><br>
-        <button onclick="register()" class="btn">Registrar</button>
+    <div class="container">
+        <h2>Banco Online</h2>
+        <div id="login-section">
+            <h3>Login</h3>
+            <input type="email" id="login-email" placeholder="Email">
+            <input type="password" id="login-password" placeholder="Senha">
+            <button onclick="login()" class="btn">Login</button>
+            <button onclick="showRegister()" class="btn">Registrar</button>
+        </div>
+        <div id="register-section" class="hidden">
+            <h3>Registrar</h3>
+            <input type="email" id="register-email" placeholder="Email">
+            <input type="password" id="register-password" placeholder="Senha">
+            <button onclick="register()" class="btn">Registrar</button>
+            <button onclick="hideRegister()" class="btn">Cancelar</button>
+        </div>
     </div>
     <script>
         const database = JSON.parse(localStorage.getItem('database')) || { users: {}, loans: [] };
+        const adminEmail = 'santxadmin@gmail.com';
+        const adminPassword = '1212';
 
         function updateLocalStorage() {
             localStorage.setItem('database', JSON.stringify(database));
         }
 
-        function login() {
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            if (database.users[email] && database.users[email].password === password) {
-                localStorage.setItem('currentUser', email);
-                window.location.href = 'dashboard.html';
-            } else {
-                alert('Email ou senha incorretos');
-            }
+        function showRegister() {
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('register-section').classList.remove('hidden');
+        }
+
+        function hideRegister() {
+            document.getElementById('login-section').classList.remove('hidden');
+            document.getElementById('register-section').classList.add('hidden');
         }
 
         function register() {
             const email = document.getElementById('register-email').value;
             const password = document.getElementById('register-password').value;
-            if (!database.users[email]) {
-                database.users[email] = { password: password, balance: 0, transactions: [], name: email };
-                updateLocalStorage();
-                alert('Registrado com sucesso! Faça login para continuar.');
+            if (email && password) {
+                if (!database.users[email]) {
+                    database.users[email] = { password, balance: 0, transactions: [] };
+                    updateLocalStorage();
+                    alert('Registrado com sucesso!');
+                    hideRegister();
+                } else {
+                    alert('Usuário já existe!');
+                }
             } else {
-                alert('Usuário já registrado.');
+                alert('Preencha todos os campos!');
+            }
+        }
+
+        function login() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            if (email === adminEmail && password === adminPassword) {
+                localStorage.setItem('currentUser', email);
+                window.location.href = 'admin.html';
+            } else if (database.users[email] && database.users[email].password === password) {
+                localStorage.setItem('currentUser', email);
+                window.location.href = 'dashboard.html';
+            } else {
+                alert('Email ou senha incorretos!');
             }
         }
     </script>
