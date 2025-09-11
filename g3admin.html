@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>G3 Admin Panel</title>
+<style>
+body { margin:0; padding:0; font-family:'Segoe UI',sans-serif; background:#000; color:#fff; }
+.container { max-width:1200px; margin:0 auto; padding:30px; }
+.header { text-align:center; margin-bottom:30px; }
+.header h1 { font-size:3rem; background:linear-gradient(45deg,#fff,#ccc); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.header p { color:#aaa; font-size:1.2rem; }
+.button { background:#222; color:#fff; border:1px solid #555; padding:10px 20px; cursor:pointer; border-radius:6px; margin:5px; }
+.button:hover { background:#444; }
+input, select { width:100%; padding:10px; margin:5px 0 15px; background:#111; color:#fff; border:1px solid #555; border-radius:6px; }
+table { width:100%; border-collapse:collapse; margin-top:20px; }
+table th, table td { border:1px solid #333; padding:10px; text-align:left; }
+table th { background:#111; }
+.notification { position:fixed; top:20px; right:20px; background:rgba(50,50,50,0.9); padding:15px 20px; border-radius:10px; display:none; z-index:1000; }
+</style>
+</head>
+<body>
+
+<div class="container" id="loginContainer">
+    <div class="header">
+        <h1>G3 Cloud Admin</h1>
+        <p>Gerencie seu sistema com segurança e confiança</p>
+    </div>
+    <div>
+        <input type="text" id="adminUsername" placeholder="Usuário">
+        <input type="password" id="adminPassword" placeholder="Senha">
+        <button class="button" onclick="loginAdmin()">Login</button>
+    </div>
+</div>
+
+<div class="container" id="adminPanel" style="display:none;">
+    <div class="header">
+        <h1>Painel G3Admin</h1>
+        <p>Gerenciamento completo de usuários e produtos</p>
+        <button class="button" onclick="logout()">Logout</button>
+    </div>
+
+    <!-- Usuários -->
+    <h2>Gerenciar Usuários</h2>
+    <input type="text" id="searchUser" placeholder="Buscar usuário..." onkeyup="fetchUsers()">
+    <table id="usersTable">
+        <thead>
+            <tr>
+                <th>ID</th><th>Nome</th><th>Email</th><th>Role</th><th>Criado em</th><th>Ações</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <h3>Criar Novo Usuário</h3>
+    <input type="text" id="newUsername" placeholder="Nome de usuário">
+    <input type="email" id="newEmail" placeholder="Email">
+    <input type="password" id="newPassword" placeholder="Senha">
+    <select id="newRole">
+        <option value="user">Usuário</option>
+        <option value="admin">Admin</option>
+    </select>
+    <button class="button" onclick="createUser()">Criar Usuário</button>
+
+    <!-- Produtos -->
+    <h2>Gerenciar Produtos</h2>
+    <table id="productsTable">
+        <thead>
+            <tr>
+                <th>ID</th><th>Nome</th><th>Preço</th><th>Estoque</th><th>Ações</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <h3>Criar Novo Produto</h3>
+    <input type="text" id="prodName" placeholder="Nome do produto">
+    <input type="number" id="prodPrice" placeholder="Preço">
+    <input type="number" id="prodStock" placeholder="Estoque">
+    <button class="button" onclick="createProduct()">Criar Produto</button>
+</div>
+
+<div class="notification" id="notification"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+<script>
+const SUPABASE_URL = 'https://fobmjibfbbzlnnnmtsct.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvYm1qaWJmYmJ6bG5ubm10c2N0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDc3ODg1NCwiZXhwIjoyMDcwMzU0ODU0fQ.05CmzJ0kuOOmW9GJr0PEQ8eGiNzGbgZhiCBgBXczo_Y';
+const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Notificação
+function showNotification(msg,type='success'){
+    const n = document.getElementById('notification');
+    n.textContent = msg;
+    n.style.background = type==='error'?'#800':'#080';
+    n.style.display='block';
+    setTimeout(()=>{n.style.display='none'},3000);
+}
+
+// Login Admin
+async function loginAdmin(){
+    const username = document.getElementById('adminUsername').value.trim();
+    const password = document.getElementById('adminPassword').value.trim();
+    if(!username||!password){ showNotification('Preencha os campos!','error'); return; }
+
+    const {data,error} = await supabase.from('users').select('*').eq('username',username).eq('password',password).eq('role','admin').limit(1).single();
+    if(error||!data){ showNotification('Usuário ou senha incorretos!','error'); return; }
+
+    await supabase.from('g3_sessions').insert({user_id: data.id});
+    localStorage.setItem('G3AdminLogged', data.id);
+
+    document.getElementById('loginContainer').style.display='none';
+    document.getElementById('adminPanel').style.display='block';
+    fetchUsers();
+    fetchProducts();
+}
+
+// Mantém sessão
+window.onload = ()=>{
+    const logged = localStorage.getItem('G3AdminLogged');
+    if(logged){ document.getElementById('loginContainer').style.display='none'; document.getElementById('adminPanel').style.display='block'; fetchUsers(); fetchProducts(); }
+}
+
+// Logout
+async function logout(){
+    const userId = localStorage.getItem('G3AdminLogged');
+    await supabase.from('g3_sessions').update({logout_time: new Date()}).eq('user_id', userId).is('logout_time', null);
+    localStorage.removeItem('G3AdminLogged');
+    document.getElementById('adminPanel').style.display='none';
+    document.getElementById('loginContainer').style.display='block';
+}
+
+// Usuários
+async function fetchUsers(){
+    try{
+        let query = supabase.from('users').select('*');
+        const search = document.getElementById('searchUser').value.trim();
+        if(search) query = query.or(`username.ilike.%${search}%,email.ilike.%${search}%`);
+        const {data,error} = await query;
+        if(error) throw error;
+
+        const tbody = document.querySelector('#usersTable tbody');
+        tbody.innerHTML='';
+        data.forEach(u=>{
+            const created = new Date(u.created_at).toLocaleString('pt-BR');
+            tbody.innerHTML+=`<tr>
+                <td>${u.id}</td><td>${u.username}</td><td>${u.email}</td><td>${u.role}</td><td>${created}</td>
+                <td><button class="button" onclick="deleteUser(${u.id})">Excluir</button></td>
+            </tr>`;
+        });
+    }catch(e){ console.log(e); showNotification('Erro ao buscar usuários!','error'); }
+}
+
+async function createUser(){
+    const username=document.getElementById('newUsername').value.trim();
+    const email=document.getElementById('newEmail').value.trim();
+    const password=document.getElementById('newPassword').value.trim();
+    const role=document.getElementById('newRole').value;
+    if(!username||!email||!password){ showNotification('Preencha todos os campos!','error'); return; }
+    const {data,error}=await supabase.from('users').insert([{username,email,password,role}]);
+    if(error){ console.log(error); showNotification('Erro ao criar usuário!','error'); return; }
+    showNotification('Usuário criado com sucesso!');
+    fetchUsers();
+}
+
+async function deleteUser(id){
+    if(!confirm('Tem certeza que deseja excluir este usuário?')) return;
+    const {error}=await supabase.from('users').delete().eq('id',id);
+    if(error){ console.log(error); showNotification('Erro ao excluir usuário!','error'); return; }
+    showNotification('Usuário excluído com sucesso!');
+    fetchUsers();
+}
+
+// Produtos
+async function fetchProducts(){
+    try{
+        const {data,error}=await supabase.from('products').select('*');
+        if(error) throw error;
+        const tbody = document.querySelector('#productsTable tbody');
+        tbody.innerHTML='';
+        data.forEach(p=>{
+            tbody.innerHTML+=`<tr>
+                <td>${p.id}</td><td>${p.name}</td><td>${p.price}</td><td>${p.stock}</td>
+                <td><button class="button" onclick="deleteProduct(${p.id})">Excluir</button></td>
+            </tr>`;
+        });
+    }catch(e){ console.log(e); showNotification('Erro ao buscar produtos!','error'); }
+}
+
+async function createProduct(){
+    const name=document.getElementById('prodName').value.trim();
+    const price=parseFloat(document.getElementById('prodPrice').value);
+    const stock=parseInt(document.getElementById('prodStock').value);
+    if(!name||isNaN(price)||isNaN(stock)){ showNotification('Preencha todos os campos!','error'); return; }
+    const {data,error}=await supabase.from('products').insert([{name,price,stock}]);
+    if(error){ console.log(error); showNotification('Erro ao criar produto!','error'); return; }
+    showNotification('Produto criado com sucesso!');
+    fetchProducts();
+}
+
+async function deleteProduct(id){
+    if(!confirm('Deseja excluir este produto?')) return;
+    const {error}=await supabase.from('products').delete().eq('id',id);
+    if(error){ console.log(error); showNotification('Erro ao excluir produto!','error'); return; }
+    showNotification('Produto excluído com sucesso!');
+    fetchProducts();
+}
+</script>
+</body>
+</html>
