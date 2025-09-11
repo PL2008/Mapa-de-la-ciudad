@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>G3 Cloud</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #ffffff, #cccccc);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .right-panel {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .section {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section h2 {
+            color: #ffffff;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 25px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 5px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px 20px;
+            background: transparent;
+            border: none;
+            color: #cccccc;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .tab.active {
+            background: linear-gradient(45deg, #ffffff, #f0f0f0);
+            color: #000000;
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #ffffff;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            background: linear-gradient(45deg, #ffffff, #f0f0f0);
+            color: #000000;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover {
+            background: linear-gradient(45deg, #f0f0f0, #e0e0e0);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #ff4444, #cc3333);
+            color: #ffffff;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .product-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .product-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .product-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #ffffff;
+        }
+
+        .product-card .price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+
+        .product-card .category {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .product-actions .btn {
+            flex: 1;
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+
+        .cart-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .cart-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .cart-item h4 {
+            color: #ffffff;
+            font-size: 1rem;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .quantity-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .quantity-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .cart-total {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 5px 0;
+        }
+
+        .total-row.final {
+            border-top: 2px solid rgba(255, 255, 255, 0.3);
+            margin-top: 15px;
+            padding-top: 15px;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .payment-methods {
+            margin-top: 20px;
+        }
+
+        .payment-method {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .payment-method:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .payment-method.selected {
+            border-color: #ffffff;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .payment-method h4 {
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .payment-details {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            grid-column: 1/-1;
+            padding: 40px;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #ccc;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            color: #ffffff;
+            padding: 15px 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 1001;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-left: 4px solid #4CAF50;
+        }
+
+        .notification.error {
+            border-left: 4px solid #f44336;
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .right-panel {
+                position: static;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                margin-bottom: 5px;
+            }
+            
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* small helper for QR image center */
+        .qr-center {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .small-muted {
+            font-size: 0.85rem;
+            color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>G3 Cloud</h1>
+            <p>Sistema de Gerenciamento Comercial</p>
+        </div>
+
+        <div class="main-grid">
+            <div class="left-panel">
+                <div class="section">
+                    <div class="tabs">
+                        <button class="tab active" onclick="switchTab('vendas')">Vendas</button>
+                        <button class="tab" onclick="switchTab('produtos')">Produtos</button>
+                        <button class="tab" onclick="switchTab('relatorios')">Relatórios</button>
+                        <button class="tab" onclick="switchTab('configuracoes')">Configurações</button>
+                    </div>
+
+                    <div id="vendas" class="tab-content active">
+                        <h2>Ponto de Venda</h2>
+                        
+                        <div class="form-group">
+                            <input type="text" id="searchProducts" placeholder="Pesquisar produtos..." oninput="searchProducts()">
+                        </div>
+
+                        <div class="products-grid" id="productsGrid">
+                            <div class="empty-state">
+                                <h3>Nenhum produto cadastrado</h3>
+                                <p>Vá para a aba "Produtos" para cadastrar seus produtos</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="produtos" class="tab-content">
+                        <h2>Gerenciar Produtos</h2>
+                        
+                        <div class="form-group">
+                            <div class="form-row">
+                                <div>
+                                    <label>Nome do Produto</label>
+                                    <input type="text" id="productName" placeholder="Digite o nome do produto">
+                                </div>
+                                <div>
+                                    <label>Preço</label>
+                                    <input type="number" id="productPrice" step="0.01" placeholder="0.00">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-row">
+                                <div>
+                                    <label>Categoria</label>
+                                    <input type="text" id="productCategory" placeholder="Digite a categoria">
+                                </div>
+                                <div>
+                                    <label>Estoque</label>
+                                    <input type="number" id="productStock" placeholder="Quantidade">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn" onclick="addProduct()">Adicionar Produto</button>
+                        <button class="btn btn-secondary" onclick="clearProductForm()">Limpar</button>
+
+                        <div class="products-grid" id="manageProductsGrid" style="margin-top: 30px;">
+                        </div>
+                    </div>
+
+                    <div id="relatorios" class="tab-content">
+                        <h2>Relatórios</h2>
+                        
+                        <div class="form-group">
+                            <div class="form-row">
+                                <div>
+                                    <label>Data Inicial</label>
+                                    <input type="date" id="reportStartDate">
+                                </div>
+                                <div>
+                                    <label>Data Final</label>
+                                    <input type="date" id="reportEndDate">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn" onclick="generateReports()">Gerar Relatórios</button>
+
+                        <div id="reportsContent" style="margin-top: 20px;">
+                            <p>Selecione um período e clique em "Gerar Relatórios"</p>
+                        </div>
+                    </div>
+
+                    <div id="configuracoes" class="tab-content">
+                        <h2>Configurações</h2>
+                        
+                        <div class="form-group">
+                            <label>Nome da Empresa</label>
+                            <input type="text" id="companyName" placeholder="Nome da sua empresa">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Nome para impressão (recibo)</label>
+                            <input type="text" id="receiptName" placeholder="Nome que aparecerá no recibo">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Chave PIX</label>
+                            <input type="text" id="pixKey" placeholder="E-mail, CPF/CNPJ ou chave PIX">
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-row">
+                                <div>
+                                    <label>CNPJ</label>
+                                    <input type="text" id="companyCnpj" placeholder="00.000.000/0000-00">
+                                </div>
+                                <div>
+                                    <label>Telefone</label>
+                                    <input type="text" id="companyPhone" placeholder="(00) 00000-0000">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn" onclick="saveSettings()">Salvar Configurações</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <h2>Carrinho de Vendas</h2>
+                
+                <div id="cartItems">
+                    <p style="text-align: center; color: #999;">Carrinho vazio</p>
+                </div>
+                
+                <div class="cart-total">
+                    <div class="total-row final">
+                        <span>Total a Pagar:</span>
+                        <span id="paymentTotal">R$ 0,00</span>
+                    </div>
+                </div>
+
+                <div class="payment-methods">
+                    <div class="payment-method" onclick="selectPaymentMethod('dinheiro', this)">
+                        <h4>💵 Dinheiro</h4>
+                        <p>Pagamento à vista</p>
+                        <div class="payment-details" id="dinheiroDetails" style="display: none;">
+                            <div class="form-group">
+                                <label>Valor Recebido</label>
+                                <input type="number" id="cashReceived" step="0.01" placeholder="0.00" onchange="calculateChange()">
+                            </div>
+                            <div class="form-group">
+                                <label>Troco</label>
+                                <input type="text" id="change" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="payment-method" onclick="selectPaymentMethod('pix', this)">
+                        <h4>📱 PIX</h4>
+                        <p>Transferência instantânea</p>
+                        <!-- PIX details (QR + name) -->
+                        <div class="payment-details" id="pixDetails" style="display: none;">
+                            <div class="form-group qr-center">
+                                <div id="pixQrContainer">
+                                    <!-- QR image injected here -->
+                                </div>
+                                <div style="flex: 1;">
+                                    <label>Recebedor</label>
+                                    <div id="pixReceiver" class="small-muted">-</div>
+                                    <div class="form-group" style="margin-top:10px;">
+                                        <label>Chave PIX</label>
+                                        <div style="display:flex; gap:8px; align-items:center;">
+                                            <input type="text" id="pixKeyPreview" readonly style="flex:1;">
+                                            <button class="btn btn-secondary" onclick="copyPixKey()">Copiar</button>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top:8px;">
+                                        <button class="btn" onclick="regeneratePixQr()">Gerar QR</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="small-muted" style="margin-top:8px;">Obs: QR gerado via serviço público para demonstração.</div>
+                        </div>
+                    </div>
+
+                    <div class="payment-method" onclick="selectPaymentMethod('cartao', this)">
+                        <h4>💳 Cartão</h4>
+                        <p>Débito ou crédito</p>
+                        <!-- Cartão details -->
+                        <div class="payment-details" id="cartaoDetails" style="display: none;">
+                            <div class="form-group">
+                                <label>Tipo</label>
+                                <div style="display:flex; gap:10px;">
+                                    <label style="display:flex; align-items:center; gap:6px;">
+                                        <input type="radio" name="cardType" value="debito" checked onchange="onCardTypeChange()"> Débito
+                                    </label>
+                                    <label style="display:flex; align-items:center; gap:6px;">
+                                        <input type="radio" name="cardType" value="credito" onchange="onCardTypeChange()"> Crédito
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div id="creditOptions" style="display:none; margin-top:10px;">
+                                <div class="form-group">
+                                    <label>Modo</label>
+                                    <select id="creditMode" onchange="onCreditModeChange()">
+                                        <option value="avista">À vista</option>
+                                        <option value="parcelado">Parcelado</option>
+                                    </select>
+                                </div>
+
+                                <div id="installmentControls" style="display:none;">
+                                    <div class="form-group">
+                                        <label>Quantidade de parcelas</label>
+                                        <input type="number" id="installments" min="2" max="36" value="2" onchange="updateInstallmentInfo()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Valor por parcela</label>
+                                        <div id="installmentInfo" class="small-muted">R$ 0,00</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn" onclick="processSale()" id="processSaleBtn">
+                    Processar Pagamento
+                </button>
+                <button class="btn btn-secondary" onclick="clearCart()">Limpar Carrinho</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notificação -->
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // Variáveis globais
+        let products = [];
+        let cart = [];
+        let sales = [];
+        let settings = {
+            companyName: 'G3 Cloud',
+            receiptName: 'G3 Cloud',
+            pixKey: '',
+            companyCnpj: '',
+            companyPhone: ''
+        };
+        let currentPaymentMethod = '';
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSettings();
+            renderProducts();
+            renderManageProducts();
+            updateCart();
+            
+            // Definir datas padrão para relatórios
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            document.getElementById('reportStartDate').value = firstDay.toISOString().split('T')[0];
+            document.getElementById('reportEndDate').value = today.toISOString().split('T')[0];
+
+            // Inicializa previews
+            updatePixPreview();
+        });
+
+        // Navegação entre abas
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+            
+            if (tabName === 'produtos') {
+                renderManageProducts();
+            } else if (tabName === 'relatorios') {
+                generateReports();
+            }
+        }
+
+        // Adicionar produto
+        function addProduct() {
+            const name = document.getElementById('productName').value.trim();
+            const price = parseFloat(document.getElementById('productPrice').value);
+            const category = document.getElementById('productCategory').value.trim();
+            const stock = parseInt(document.getElementById('productStock').value);
+
+            if (!name || !price || price <= 0 || !category || !stock || stock < 0) {
+                showNotification('Preencha todos os campos obrigatórios!', 'error');
+                return;
+            }
+
+            const newProduct = {
+                id: Date.now(),
+                name,
+                price,
+                category,
+                stock
+            };
+
+            products.push(newProduct);
+            renderProducts();
+            renderManageProducts();
+            clearProductForm();
+            showNotification('Produto adicionado com sucesso!', 'success');
+        }
+
+        // Limpar formulário
+        function clearProductForm() {
+            document.getElementById('productName').value = '';
+            document.getElementById('productPrice').value = '';
+            document.getElementById('productCategory').value = '';
+            document.getElementById('productStock').value = '';
+        }
+
+        // Renderizar produtos na venda
+        function renderProducts() {
+            const grid = document.getElementById('productsGrid');
+            
+            if (products.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <h3>Nenhum produto cadastrado</h3>
+                        <p>Vá para a aba "Produtos" para cadastrar seus produtos</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const searchTerm = document.getElementById('searchProducts').value.toLowerCase();
+            let filteredProducts = products.filter(product => 
+                product.name.toLowerCase().includes(searchTerm) && product.stock > 0
+            );
+
+            if (filteredProducts.length === 0) {
+                grid.innerHTML = '<div class="empty-state"><p>Nenhum produto encontrado</p></div>';
+                return;
+            }
+
+            grid.innerHTML = filteredProducts.map(product => `
+                <div class="product-card" onclick="addToCart(${product.id})">
+                    <div class="category">${product.category}</div>
+                    <h3>${product.name}</h3>
+                    <div class="price">R$ ${product.price.toFixed(2).replace('.', ',')}</div>
+                    <p style="font-size: 0.8rem; color: #4CAF50;">
+                        Estoque: ${product.stock} unidades
+                    </p>
+                </div>
+            `).join('');
+        }
+
+        // Renderizar produtos no gerenciamento
+        function renderManageProducts() {
+            const grid = document.getElementById('manageProductsGrid');
+            
+            if (products.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <h3>Nenhum produto cadastrado</h3>
+                        <p>Use o formulário acima para cadastrar seu primeiro produto</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            grid.innerHTML = products.map(product => `
+                <div class="product-card">
+                    <div class="category">${product.category}</div>
+                    <h3>${product.name}</h3>
+                    <div class="price">R$ ${product.price.toFixed(2).replace('.', ',')}</div>
+                    <p style="font-size: 0.8rem; color: #4CAF50;">
+                        Estoque: ${product.stock} unidades
+                    </p>
+                    <div class="product-actions">
+                        <button class="btn btn-danger" onclick="deleteProduct(${product.id})">Excluir</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Excluir produto
+        function deleteProduct(id) {
+            if (!confirm('Tem certeza que deseja excluir este produto?')) return;
+
+            products = products.filter(p => p.id !== id);
+            renderProducts();
+            renderManageProducts();
+            showNotification('Produto excluído com sucesso!', 'success');
+        }
+
+        // Buscar produtos
+        function searchProducts() {
+            renderProducts();
+        }
+
+        // Adicionar ao carrinho
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product || product.stock <= 0) {
+                showNotification('Produto sem estoque!', 'error');
+                return;
+            }
+
+            const cartItem = cart.find(item => item.id === productId);
+            if (cartItem) {
+                if (cartItem.quantity >= product.stock) {
+                    showNotification('Estoque insuficiente!', 'error');
+                    return;
+                }
+                cartItem.quantity++;
+            } else {
+                cart.push({
+                    id: productId,
+                    name: product.name,
+                    price: product.price,
+                    quantity: 1,
+                    stock: product.stock
+                });
+            }
+
+            updateCart();
+            showNotification(`${product.name} adicionado ao carrinho!`, 'success');
+        }
+
+        // Remover do carrinho
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            updateCart();
+        }
+
+        // Atualizar quantidade
+        function updateQuantity(productId, change) {
+            const cartItem = cart.find(item => item.id === productId);
+            if (!cartItem) return;
+
+            const product = products.find(p => p.id === productId);
+            const newQuantity = cartItem.quantity + change;
+
+            if (newQuantity <= 0) {
+                removeFromCart(productId);
+                return;
+            }
+
+            if (newQuantity > product.stock) {
+                showNotification('Estoque insuficiente!', 'error');
+                return;
+            }
+
+            cartItem.quantity = newQuantity;
+            updateCart();
+        }
+
+        // Atualizar carrinho
+        function updateCart() {
+            const cartItems = document.getElementById('cartItems');
+
+            if (cart.length === 0) {
+                cartItems.innerHTML = '<p style="text-align: center; color: #999;">Carrinho vazio</p>';
+            } else {
+                cartItems.innerHTML = cart.map(item => `
+                    <div class="cart-item">
+                        <div class="cart-item-header">
+                            <h4>${item.name}</h4>
+                            <button class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;" onclick="removeFromCart(${item.id})">×</button>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>R$ ${item.price.toFixed(2).replace('.', ',')}</span>
+                            <div class="quantity-controls">
+                                <button class="quantity-btn" onclick="updateQuantity(${item.id}, -1)">-</button>
+                                <span style="margin: 0 10px;">${item.quantity}</span>
+                                <button class="quantity-btn" onclick="updateQuantity(${item.id}, 1)">+</button>
+                            </div>
+                        </div>
+                        <div style="text-align: right; margin-top: 5px; font-weight: bold;">
+                            Subtotal: R$ ${(item.price * item.quantity).toFixed(2).replace('.', ',')}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            updateTotal();
+        }
+
+        // Atualizar total
+        function updateTotal() {
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            document.getElementById('paymentTotal').textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+
+            // If currently in credit mode and installments shown, update installment calculation
+            updateInstallmentInfo();
+        }
+
+        // Limpar carrinho
+        function clearCart() {
+            if (cart.length === 0) return;
+            if (!confirm('Limpar carrinho?')) return;
+            
+            cart = [];
+            updateCart();
+            resetPaymentForm();
+            showNotification('Carrinho limpo!', 'success');
+        }
+
+        // Selecionar método de pagamento
+        function selectPaymentMethod(method, element) {
+            document.querySelectorAll('.payment-method').forEach(pm => pm.classList.remove('selected'));
+            if (element) element.classList.add('selected');
+            
+            document.querySelectorAll('.payment-details').forEach(detail => {
+                detail.style.display = 'none';
+            });
+            
+            if (document.getElementById(method + 'Details')) {
+                document.getElementById(method + 'Details').style.display = 'block';
+            }
+            
+            currentPaymentMethod = method;
+
+            // When pix selected, ensure QR updated
+            if (method === 'pix') {
+                updatePixPreview();
+            }
+        }
+
+        // Calcular troco
+        function calculateChange() {
+            const total = parseFloat(document.getElementById('paymentTotal').textContent.replace('R$ ', '').replace(',', '.'));
+            const received = parseFloat(document.getElementById('cashReceived').value) || 0;
+            const change = received - total;
+            
+            document.getElementById('change').value = change >= 0 ? 
+                `R$ ${change.toFixed(2).replace('.', ',')}` : 
+                'Valor insuficiente';
+        }
+
+        // Processar venda
+        function processSale() {
+            if (cart.length === 0) {
+                showNotification('Carrinho vazio!', 'error');
+                return;
+            }
+
+            if (!currentPaymentMethod) {
+                showNotification('Selecione um método de pagamento!', 'error');
+                return;
+            }
+
+            // Validação para pagamento em dinheiro
+            if (currentPaymentMethod === 'dinheiro') {
+                const total = parseFloat(document.getElementById('paymentTotal').textContent.replace('R$ ', '').replace(',', '.'));
+                const received = parseFloat(document.getElementById('cashReceived').value) || 0;
+                if (received < total) {
+                    showNotification('Valor recebido é insuficiente!', 'error');
+                    return;
+                }
+            }
+
+            // Validações PIX (opcional: apenas checar chave)
+            if (currentPaymentMethod === 'pix') {
+                if (!settings.pixKey) {
+                    showNotification('Configure a chave PIX nas configurações antes de processar pagamentos PIX.', 'error');
+                    return;
+                }
+            }
+
+            // Validações Cartão
+            let cardPaymentDetails = null;
+            if (currentPaymentMethod === 'cartao') {
+                const cardTypeEl = document.querySelector('input[name="cardType"]:checked');
+                const cardType = cardTypeEl ? cardTypeEl.value : 'debito';
+                if (cardType === 'credito') {
+                    const mode = document.getElementById('creditMode').value;
+                    if (mode === 'parcelado') {
+                        const installments = parseInt(document.getElementById('installments').value) || 1;
+                        if (installments < 2) {
+                            showNotification('Quantidade de parcelas inválida.', 'error');
+                            return;
+                        }
+                        const total = parseFloat(document.getElementById('paymentTotal').textContent.replace('R$ ', '').replace(',', '.'));
+                        const per = parseFloat((total / installments).toFixed(2));
+                        cardPaymentDetails = { cardType, mode, installments, perInstallmentValue: per };
+                    } else {
+                        const total = parseFloat(document.getElementById('paymentTotal').textContent.replace('R$ ', '').replace(',', '.'));
+                        cardPaymentDetails = { cardType, mode, installments: 1, perInstallmentValue: total };
+                    }
+                } else { // débito
+                    const total = parseFloat(document.getElementById('paymentTotal').textContent.replace('R$ ', '').replace(',', '.'));
+                    cardPaymentDetails = { cardType: 'debito', mode: 'debito', installments: 1, perInstallmentValue: total };
+                }
+            }
+
+            // Processar venda: reduzir estoque
+            cart.forEach(item => {
+                const product = products.find(p => p.id === item.id);
+                if (product) {
+                    product.stock -= item.quantity;
+                }
+            });
+
+            // Registrar venda
+            const total = parseFloat(document.getElementById('paymentTotal').textContent.replace('R$ ', '').replace(',', '.'));
+            const sale = {
+                id: Date.now(),
+                date: new Date().toISOString(),
+                items: [...cart],
+                total,
+                paymentMethod: currentPaymentMethod,
+                paymentDetails: {}
+            };
+
+            if (currentPaymentMethod === 'pix') {
+                sale.paymentDetails = {
+                    pixKey: settings.pixKey,
+                    receiver: settings.receiptName || settings.companyName,
+                    qrUrl: buildPixQrUrl(settings.pixKey, total, settings.receiptName)
+                };
+            } else if (currentPaymentMethod === 'cartao') {
+                sale.paymentDetails = cardPaymentDetails;
+            } else if (currentPaymentMethod === 'dinheiro') {
+                const received = parseFloat(document.getElementById('cashReceived').value) || total;
+                sale.paymentDetails = { received, change: received - total };
+            }
+
+            sales.push(sale);
+
+            // Limpar carrinho
+            cart = [];
+            updateCart();
+            resetPaymentForm();
+            renderProducts();
+            renderManageProducts();
+
+            showNotification('Venda processada com sucesso!', 'success');
+            
+            // Mostrar recibo
+            if (confirm('Venda concluída! Deseja ver o recibo?')) {
+                showReceipt(sale);
+            }
+        }
+
+        // Mostrar recibo
+        function showReceipt(sale) {
+            const receiptWindow = window.open('', '_blank', 'width=400,height=700');
+            // Construção do corpo do recibo com informações adicionais PIX/cartão
+            let paymentSection = '';
+            if (sale.paymentMethod === 'pix') {
+                paymentSection = `
+                    <div style="text-align:center; margin-top:15px;">
+                        <p><strong>PIX - ${escapeHtml(sale.paymentDetails.receiver || settings.receiptName)}</strong></p>
+                        <img src="${sale.paymentDetails.qrUrl}" alt="PIX QR" style="width:150px; height:150px; display:block; margin:0 auto;" />
+                        <p style="margin-top:8px;">Chave: ${escapeHtml(sale.paymentDetails.pixKey)}</p>
+                    </div>
+                `;
+            } else if (sale.paymentMethod === 'cartao') {
+                if (sale.paymentDetails.cardType === 'debito') {
+                    paymentSection = `<p><strong>Cartão - Débito</strong></p>`;
+                } else {
+                    const modeText = sale.paymentDetails.mode === 'avista' ? 'À vista' : `Parcelado (${sale.paymentDetails.installments}x de R$ ${sale.paymentDetails.perInstallmentValue.toFixed(2)})`;
+                    paymentSection = `<p><strong>Cartão - Crédito</strong></p><p>${modeText}</p>`;
+                }
+            } else if (sale.paymentMethod === 'dinheiro') {
+                paymentSection = `<p><strong>Dinheiro</strong></p><p>Recebido: R$ ${sale.paymentDetails.received.toFixed(2)} - Troco: R$ ${sale.paymentDetails.change.toFixed(2)}</p>`;
+            }
+
+            const receiptContent = `
+                <html>
+                <head>
+                    <title>Recibo - ${escapeHtml(settings.receiptName || settings.companyName)}</title>
+                    <style>
+                        body { font-family: monospace; padding: 20px; background: white; color: black; }
+                        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; }
+                        .item { display: flex; justify-content: space-between; margin: 5px 0; }
+                        .total { border-top: 2px solid #000; padding-top: 10px; font-weight: bold; }
+                        .small { font-size: 0.9em; color: #333; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h2>${escapeHtml(settings.receiptName || settings.companyName)}</h2>
+                        <p class="small">Data: ${new Date(sale.date).toLocaleString('pt-BR')}</p>
+                        <p class="small">Venda: #${sale.id}</p>
+                    </div>
+                    
+                    <div style="margin: 20px 0;">
+                        ${sale.items.map(item => `
+                            <div class="item">
+                                <span>${escapeHtml(item.name)}</span>
+                                <span>${item.quantity}x R$ ${item.price.toFixed(2)}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="total">
+                        <div class="item" style="font-size: 1.2em;">
+                            <span>TOTAL:</span>
+                            <span>R$ ${sale.total.toFixed(2)}</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px;">
+                        ${paymentSection}
+                    </div>
+                    
+                    <div style="margin-top: 30px; text-align: center; font-size: 0.8em;">
+                        <p>Obrigado pela preferência!</p>
+                        <p>Sistema: G3 Cloud</p>
+                    </div>
+                </body>
+                </html>
+            `;
+            receiptWindow.document.write(receiptContent);
+        }
+
+        // Obter nome do método de pagamento
+        function getPaymentMethodName(method) {
+            const names = {
+                'dinheiro': 'Dinheiro',
+                'pix': 'PIX',
+                'cartao': 'Cartão'
+            };
+            return names[method] || method;
+        }
+
+        // Resetar formulário de pagamento
+        function resetPaymentForm() {
+            currentPaymentMethod = '';
+            document.querySelectorAll('.payment-method').forEach(pm => pm.classList.remove('selected'));
+            document.querySelectorAll('.payment-details').forEach(detail => {
+                detail.style.display = 'none';
+            });
+            
+            // Limpar campos
+            const cashReceived = document.getElementById('cashReceived');
+            const change = document.getElementById('change');
+            if (cashReceived) cashReceived.value = '';
+            if (change) change.value = '';
+
+            // reset card options to default
+            document.querySelectorAll('input[name="cardType"]').forEach(r => r.checked = r.value === 'debito');
+            document.getElementById('creditOptions').style.display = 'none';
+            document.getElementById('installmentControls').style.display = 'none';
+        }
+
+        // Gerar relatórios
+        function generateReports() {
+            const startDate = document.getElementById('reportStartDate').value;
+            const endDate = document.getElementById('reportEndDate').value;
+            
+            if (!startDate || !endDate) {
+                showNotification('Selecione o período para o relatório!', 'error');
+                return;
+            }
+
+            const filteredSales = sales.filter(sale => {
+                const saleDate = new Date(sale.date).toISOString().split('T')[0];
+                return saleDate >= startDate && saleDate <= endDate;
+            });
+
+            const totalSales = filteredSales.reduce((sum, sale) => sum + sale.total, 0);
+            const totalTransactions = filteredSales.length;
+            const averageTicket = totalTransactions > 0 ? totalSales / totalTransactions : 0;
+
+            // Produtos mais vendidos
+            const productSales = {};
+            filteredSales.forEach(sale => {
+                sale.items.forEach(item => {
+                    if (!productSales[item.name]) {
+                        productSales[item.name] = 0;
+                    }
+                    productSales[item.name] += item.quantity;
+                });
+            });
+
+            const sortedProducts = Object.entries(productSales)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+
+            // Métodos de pagamento
+            const paymentMethods = { dinheiro: 0, pix: 0, cartao: 0 };
+            filteredSales.forEach(sale => {
+                paymentMethods[sale.paymentMethod] += sale.total;
+            });
+
+            const reportsContent = document.getElementById('reportsContent');
+            reportsContent.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                    <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px;">
+                        <h3>Vendas do Período</h3>
+                        <p>Total de Vendas: <strong>R$ ${totalSales.toFixed(2).replace('.', ',')}</strong></p>
+                        <p>Transações: <strong>${totalTransactions}</strong></p>
+                        <p>Ticket Médio: <strong>R$ ${averageTicket.toFixed(2).replace('.', ',')}</strong></p>
+                    </div>
+                    
+                    <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px;">
+                        <h3>Produtos Mais Vendidos</h3>
+                        ${sortedProducts.length > 0 ? 
+                            sortedProducts.map((product, index) => 
+                                `<p>${index + 1}. ${product[0]}: <strong>${product[1]} unidades</strong></p>`
+                            ).join('') : 
+                            '<p>Nenhuma venda no período</p>'
+                        }
+                    </div>
+                    
+                    <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px;">
+                        <h3>Métodos de Pagamento</h3>
+                        <p>Dinheiro: <strong>R$ ${paymentMethods.dinheiro.toFixed(2).replace('.', ',')}</strong></p>
+                        <p>PIX: <strong>R$ ${paymentMethods.pix.toFixed(2).replace('.', ',')}</strong></p>
+                        <p>Cartão: <strong>R$ ${paymentMethods.cartao.toFixed(2).replace('.', ',')}</strong></p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Carregar configurações
+        function loadSettings() {
+            // If you want persistence later, add localStorage; for now load defaults in settings object
+            document.getElementById('companyName').value = settings.companyName;
+            document.getElementById('companyCnpj').value = settings.companyCnpj;
+            document.getElementById('companyPhone').value = settings.companyPhone;
+            document.getElementById('receiptName').value = settings.receiptName;
+            document.getElementById('pixKey').value = settings.pixKey;
+
+            // Also update PIX preview fields
+            updatePixPreview();
+        }
+
+        // Salvar configurações
+        function saveSettings() {
+            settings.companyName = document.getElementById('companyName').value.trim() || 'G3 Cloud';
+            settings.receiptName = document.getElementById('receiptName').value.trim() || settings.companyName;
+            settings.pixKey = document.getElementById('pixKey').value.trim();
+            settings.companyCnpj = document.getElementById('companyCnpj').value.trim();
+            settings.companyPhone = document.getElementById('companyPhone').value.trim();
+
+            updatePixPreview();
+            showNotification('Configurações salvas com sucesso!', 'success');
+        }
+
+        // Atualiza preview do PIX (nome + chave + QR)
+        function updatePixPreview() {
+            const receiver = settings.receiptName || settings.companyName;
+            const pixKeyPreview = document.getElementById('pixKeyPreview');
+            const pixReceiver = document.getElementById('pixReceiver');
+            const qrContainer = document.getElementById('pixQrContainer');
+
+            if (pixKeyPreview) pixKeyPreview.value = settings.pixKey || '';
+            if (pixReceiver) pixReceiver.textContent = receiver || '-';
+
+            // generate QR image if key exists
+            if (settings.pixKey) {
+                const total = parseFloat(document.getElementById('paymentTotal').textContent.replace('R$ ', '').replace(',', '.')) || 0;
+                const url = buildPixQrUrl(settings.pixKey, total, receiver);
+                qrContainer.innerHTML = `<img src="${url}" alt="PIX QR" style="width:120px; height:120px;" />`;
+            } else {
+                qrContainer.innerHTML = `<div style="width:120px; height:120px; display:flex; align-items:center; justify-content:center; background:#f3f3f3; color:#333;">-</div>`;
+            }
+        }
+
+        // Construir URL de QR para PIX (usa serviço público qrserver.com para demonstrar)
+        function buildPixQrUrl(key, amount = 0, receiver = '') {
+            // Monta um texto simples com chave e descr. Para produção usar payload EMV do PIX
+            const text = `PIX|chave:${key}|valor:${amount.toFixed(2)}|dest:${receiver}`;
+            const encoded = encodeURIComponent(text);
+            // API pública de geração de QR (apenas para demonstração/offline)
+            return `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encoded}`;
+        }
+
+        // Regenerar QR manualmente (botão)
+        function regeneratePixQr() {
+            // atualiza settings.pixKey com valor em campo caso alguém tenha editado sem salvar
+            const maybeKey = document.getElementById('pixKey').value.trim();
+            if (maybeKey) settings.pixKey = maybeKey;
+            updatePixPreview();
+            showNotification('QR PIX atualizado.', 'success');
+        }
+
+        // Copiar chave PIX para área de transferência
+        function copyPixKey() {
+            const key = document.getElementById('pixKeyPreview').value || '';
+            if (!key) {
+                showNotification('Nenhuma chave PIX configurada.', 'error');
+                return;
+            }
+            navigator.clipboard?.writeText(key).then(() => {
+                showNotification('Chave PIX copiada!', 'success');
+            }).catch(() => {
+                showNotification('Falha ao copiar (permissão negada).', 'error');
+            });
+        }
+
+        // Eventos de cartão
+        function onCardTypeChange() {
+            const cardType = document.querySelector('input[name="cardType"]:checked').value;
+            const creditOptions = document.getElementById('creditOptions');
+            if (cardType === 'credito') {
+                creditOptions.style.display = 'block';
+                // default credit mode
+                onCreditModeChange();
+            } else {
+                creditOptions.style.display = 'none';
+                document.getElementById('installmentControls').style.display = 'none';
+            }
+        }
+
+        function onCreditModeChange() {
+            const mode = document.getElementById('creditMode').value;
+            const instalCtrl = document.getElementById('installmentControls');
+            if (mode === 'parcelado') {
+                instalCtrl.style.display = 'block';
+                updateInstallmentInfo();
+            } else {
+                instalCtrl.style.display = 'none';
+                // set installment info to total
+                const total = parseFloat(document.getElementById('paymentTotal').textContent.replace('R$ ', '').replace(',', '.')) || 0;
+                document.getElementById('installmentInfo').textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+            }
+        }
+
+        function updateInstallmentInfo() {
+            const total = parseFloat(document.getElementById('paymentTotal').textContent.replace('R$ ', '').replace(',', '.')) || 0;
+            const installmentsEl = document.getElementById('installments');
+            if (!installmentsEl) return;
+            const installments = parseInt(installmentsEl.value) || 1;
+            const per = installments > 0 ? (total / installments) : 0;
+            document.getElementById('installmentInfo').textContent = `R$ ${per.toFixed(2).replace('.', ',')} (aprox.) — ${installments}x`;
+        }
+
+        // Sistema de notificações
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // escape para evitar injeção simples no recibo (boas práticas)
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/[&<>"'`=\/]/g, function(s) {
+                return ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;',
+                    '/': '&#x2F;',
+                    '`': '&#x60;',
+                    '=': '&#x3D;'
+                })[s];
+            });
+        }
+
+        console.log('G3 Cloud inicializado com sucesso!');
+    </script>
+</body>
+</html>

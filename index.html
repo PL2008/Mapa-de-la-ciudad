@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>G3 Cloud - Login</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #000;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .login-wrapper {
+      text-align: center;
+      max-width: 350px;
+      width: 100%;
+      padding: 30px;
+      background: #111;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.8);
+    }
+
+    .logo {
+      font-size: 2rem;
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #00d9ff;
+    }
+
+    .slogan {
+      font-size: 0.9rem;
+      margin-bottom: 25px;
+      color: #aaa;
+    }
+
+    input {
+      width: 90%;
+      padding: 12px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 6px;
+      background: #222;
+      color: #fff;
+      font-size: 1rem;
+    }
+
+    input:focus {
+      outline: 2px solid #00d9ff;
+    }
+
+    button {
+      width: 95%;
+      padding: 12px;
+      margin-top: 10px;
+      background: #00d9ff;
+      border: none;
+      border-radius: 6px;
+      color: #000;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: #00aacc;
+    }
+
+    #msg {
+      margin-top: 15px;
+      font-size: 0.9rem;
+      color: #ff4444;
+    }
+
+    .trust {
+      margin-top: 20px;
+      font-size: 0.8rem;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-wrapper">
+    <div class="logo">G3 Cloud</div>
+    <div class="slogan">Confiabilidade e segurança em cada acesso</div>
+
+    <input type="text" id="username" placeholder="Usuário">
+    <input type="password" id="password" placeholder="Senha">
+    <button onclick="login()">Entrar</button>
+    <p id="msg"></p>
+
+    <div class="trust">🔒 Conexão Segura • Powered by G3 Cloud</div>
+  </div>
+
+  <!-- Bibliotecas -->
+  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+  <script>
+    const SUPABASE_URL = "https://fobmjibfbbzlnnnmtsct.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    function hashPassword(password) {
+      return CryptoJS.SHA256(password).toString();
+    }
+
+    window.onload = function () {
+      const userSession = JSON.parse(localStorage.getItem("loggedUser"));
+      if (userSession) {
+        if (userSession.isAdmin) {
+          window.location.href = "G3Admin.html";
+        } else {
+          window.location.href = "UserDashboard.html";
+        }
+      }
+    };
+
+    async function login() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value;
+      const msg = document.getElementById("msg");
+
+      // Admin fixo
+      if (username === "G3ADMIN" && password === "@Pedro031108") {
+        localStorage.setItem("loggedUser", JSON.stringify({ username: "G3ADMIN", isAdmin: true }));
+        window.location.href = "G3Admin.html";
+        return;
+      }
+
+      // Usuário normal
+      const { data, error } = await supabase
+        .from("users")
+        .select("*")
+        .eq("username", username)
+        .single();
+
+      if (error || !data) {
+        msg.innerText = "Usuário não encontrado!";
+        return;
+      }
+
+      if (data.is_blocked) {
+        msg.innerText = "Usuário bloqueado!";
+        return;
+      }
+
+      if (data.password !== hashPassword(password)) {
+        msg.innerText = "Senha incorreta!";
+        return;
+      }
+
+      localStorage.setItem("loggedUser", JSON.stringify({ username: data.username, isAdmin: data.is_admin }));
+      window.location.href = data.is_admin ? "G3Admin.html" : "UserDashboard.html";
+    }
+  </script>
+</body>
+</html>
